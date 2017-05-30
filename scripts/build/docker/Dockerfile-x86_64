@@ -1,9 +1,12 @@
 FROM ubuntu:12.04
 
+
+
 # Setup APT sources
 
 
 RUN echo "deb http://archive.ubuntu.com/ubuntu precise-backports main restricted universe multiverse" >> /etc/apt/sources.list
+
 
 
 # Install dependencies
@@ -30,10 +33,12 @@ RUN apt-get update \
     xvfb \
     zip
 
+
 # Install a C++11 compiler
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
   && apt-get update && apt-get install -y gcc-4.8 g++-4.8 \
   && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
+
 
 # NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - \
@@ -48,3 +53,5 @@ RUN npm install -g uglify-es@3.0.3 electron-installer-debian@0.5.1
 # Python
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+
+
