@@ -171,6 +171,9 @@ define execute-command
 
 endef
 
+CHANGELOG.md:
+	./node_modules/.bin/versionist
+
 $(BUILD_DIRECTORY):
 	mkdir $@
 
@@ -426,6 +429,15 @@ $(BUILD_OUTPUT_DIRECTORY)/$(APPLICATION_NAME)-cli-$(APPLICATION_VERSION)-$(TARGE
 TARGETS = \
 	help \
 	info \
+	lint \
+	lint-js \
+	lint-sass \
+	lint-cpp \
+	lint-html \
+	lint-spell \
+	test-gui \
+	test-sdk \
+	test \
 	sanity-checks \
 	clean \
 	distclean \
@@ -531,6 +543,43 @@ electron-develop:
 		-v "$(ELECTRON_VERSION)" \
 		-t electron \
 		-s "$(TARGET_PLATFORM)"
+
+NODE_MODULES_BIN=./node_modules/.bin
+
+sass:
+	$(NODE_MODULES_BIN)/node-sass ./lib/gui/scss/main.scss > ./lib/gui/css/main.css
+
+lint-js:
+	$(NODE_MODULES_BIN)/eslint lib tests scripts bin versionist.conf.js
+
+lint-sass:
+	$(NODE_MODULES_BIN)/sass-lint lib/gui/scss
+
+lint-cpp:
+	cpplint --recursive src
+
+lint-html:
+	node scripts/html-lint.js
+
+lint-spell:
+	codespell.py \
+		--skip *.gz,*.bz2,*.xz,*.zip,*.img,*.dmg,*.iso,*.rpi-sdcard,.DS_Store \
+		lib tests docs scripts Makefile *.md LICENSE
+
+lint: lint-js lint-sass lint-cpp lint-html lint-spell
+
+ELECTRON_MOCHA_OPTIONS=--recursive --reporter spec
+
+test-gui:
+	$(NODE_MODULES_BIN)/electron-mocha $(ELECTRON_MOCHA_OPTIONS) --renderer tests/gui
+
+test-sdk:
+	$(NODE_MODULES_BIN)/electron-mocha $(ELECTRON_MOCHA_OPTIONS) \
+		tests/shared \
+		tests/child-writer \
+		tests/image-stream
+
+test: test-gui test-sdk
 
 help:
 	@echo "Available targets: $(TARGETS)"
